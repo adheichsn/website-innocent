@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum FeedbackForVR {
+  BAGIDATA
+  BIGBOX
+  BIGEYE
+  DTRAL
+  HSI
+  INLET
+  IDEABOX
+  INDIBIZ
+  MYDIGILEARN
+  OCA
+  PODCAST
+  SCN
+  ANTARESEAZY
+  SMARTHOME
+  SMARTVILLAGE
+  SMARTEYE
+  SPRINTHINK
+  YHC
+  TELKOMIOT
+}
+
+enum ZoneCondition {
+  HIPSTER
+  HACKER
+  HUSTLER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  feedbacks    Feedback[]
+  LogVrtour    LogVrtour[]
+  FeedbackVR   FeedbackVR[]
+  FeedbackVRGeneral  FeedbackVRGeneral[]
+  InterplayManagers  InterplayManager[]
+}
+
+model Feedback {
+  id           Int        @id @default(autoincrement())
+  userId       String         
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating       Int
+  description  String
+  createdAt    DateTime   @default(now())
+}
+
+model LogVrtour {
+  id           Int        @id @default(autoincrement())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+}
+
+model FeedbackVR {
+  id          Int         @id @default(autoincrement())
+  userId      String      
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  for         FeedbackForVR
+  ratingQ1    Int
+  ratingQ2    Int
+  ratingQ3    Int
+  ratingQ4    Int
+  ratingQ5    Int
+  createdAt   DateTime    @default(now())
+}
+
+model FeedbackVRGeneral {
+  id          Int         @id @default(autoincrement())
+  userId      String      
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratingQ1    Int
+  ratingQ2    Int
+  ratingQ3    Int
+  ratingQ4    Int
+  ratingQ5    Int
+  ratingQ6    Int
+  ratingQ7    Int
+  comment     String?      
+  createdAt   DateTime    @default(now())
+}
+
+model InterplayManager {
+  id            Int         @id @default(autoincrement())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  zoneCondition ZoneCondition @default(HIPSTER)
+  createdAt     DateTime    @default(now())
+  InterplayHandlers  InterplayHandler[]
+}
+
+model InterplayHandler {
+  id            Int         @id @default(autoincrement())
+  interplayManagerId        Int
+  interplayManager          InterplayManager        @relation(fields: [interplayManagerId], references: [id], onDelete: Cascade)
+  BAGIDATA      Boolean     @default(false)
+  BIGBOX        Boolean     @default(false)
+  BIGEYE        Boolean     @default(false)
+  DTRAL         Boolean     @default(false)
+  HSI           Boolean     @default(false)
+  INLET         Boolean     @default(false)
+  IDEABOX       Boolean     @default(false)
+  INDIBIZ       Boolean     @default(false)
+  MYDIGILEARN   Boolean     @default(false)
+  OCA           Boolean     @default(false)
+  PODCAST       Boolean     @default(false)
+  SCN           Boolean     @default(false)
+  ANTARESEAZY   Boolean     @default(false)
+  SMARTHOME     Boolean     @default(false)
+  SMARTVILLAGE  Boolean     @default(false)
+  SMARTEYE      Boolean     @default(false)
+  SPRINTHINK    Boolean     @default(false)
+  YHC           Boolean     @default(false)
+  TELKOMIOT     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
