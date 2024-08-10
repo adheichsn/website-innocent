@@ -24,8 +24,7 @@ interface PaginatedUsers {
 
 const UserPage = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [totalUser, setTotalUser] = useState(1);
-
+  const [totalUser, setTotalUser] = useState(0); // Set initial value to 0
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -38,14 +37,29 @@ const UserPage = () => {
         if (axios.isAxiosError(err)) {
           setError(err.message);
         } else {
-          setError("An unexpected error occured");
+          setError("An unexpected error occurred");
         }
       }
     };
     fetchUser();
   }, []);
 
-  // Setting Paggination
+  useEffect(() => {
+    const updateTotalUsersInSpreadsheet = async () => {
+      try {
+        await axios.post('/api/update-spreadsheet', { totalUsers: totalUser });
+        console.log('Spreadsheet updated successfully');
+      } catch (error) {
+        console.error('Error updating spreadsheet:', error);
+      }
+    };
+
+    if (totalUser > 0) {
+      updateTotalUsersInSpreadsheet();
+    }
+  }, [totalUser]);
+
+  // Setting Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const totalPages = Math.ceil(users.length / itemsPerPage);

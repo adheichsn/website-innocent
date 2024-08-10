@@ -3,20 +3,34 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Pagination from "../component/Pagination";
 
+interface LogAccessVideo {
+  userAccesses: { userName: string; count: number; createdAt: string }[];
+  total: number;
+  dailyAccess: { date: string; count: number }[];
+}
+
 const DashboardPage = () => {
-  const [logAccessVideo, setLogAccessVideo] = useState({
+  const [logAccessVideo, setLogAccessVideo] = useState<LogAccessVideo>({
     userAccesses: [{ userName: "", count: 0, createdAt: "" }],
     total: 0,
-    dailyAccess: [{date: "", count: 0}]
+    dailyAccess: [{ date: "", count: 0 }]
   });
 
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get("/api/logvrtours");
-      setLogAccessVideo(response.data);
+      const data: LogAccessVideo = response.data;
+      setLogAccessVideo(data);
+
+      try {
+        await axios.post('/api/update-spreadsheet', { totalUsers: data.total });
+        console.log('Spreadsheet updated successfully');
+      } catch (error) {
+        console.error('Error updating spreadsheet:', error);
+      }
     };
     fetchData();
   }, []);
@@ -29,9 +43,9 @@ const DashboardPage = () => {
     setDateTo(e.target.value);
   };
 
-  // Setting Paggination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  // Setting Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const totalPages = Math.ceil(
     logAccessVideo.userAccesses.length / itemsPerPage
   );
@@ -43,18 +57,18 @@ const DashboardPage = () => {
     setCurrentPage(1);
   };
 
-   const filteredLogs = logAccessVideo.userAccesses.filter((log) => {
-     const logDate = new Date(log.createdAt);
-     const fromDate = dateFrom ? new Date(dateFrom) : new Date("1970-01-01");
-     const toDate = dateTo ? new Date(dateTo) : new Date();
+  const filteredLogs = logAccessVideo.userAccesses.filter((log) => {
+    const logDate = new Date(log.createdAt);
+    const fromDate = dateFrom ? new Date(dateFrom) : new Date("1970-01-01");
+    const toDate = dateTo ? new Date(dateTo) : new Date();
 
-     return logDate >= fromDate && logDate <= toDate;
-   });
+    return logDate >= fromDate && logDate <= toDate;
+  });
 
-   const currentLogs = filteredLogs.slice(
-     (currentPage - 1) * itemsPerPage,
-     currentPage * itemsPerPage
-   );
+  const currentLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <>
